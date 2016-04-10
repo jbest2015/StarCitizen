@@ -95,27 +95,44 @@ namespace Sample.Controllers
          * 
          * @return SpeechletResponse spoken and visual status message
          */
-        private SpeechletResponse StatusUpdate(Intent intent,Session session)
+        private SpeechletResponse StatusUpdate(Intent intent, Session session)
         {
             // Create a random numnber. Right now I am hard coding.. eventually we will pull this from the configuration database. 
-            Random rnd = new Random();
-            int x = rnd.Next(1, 11);
 
-            //pull the dialogue from the database 
-            using (var sc = new StarCitizenDBEntities10())
+            using (var sc1 = new StarCitizenDBEntities10())
             {
-                var query = from i in sc.StatusSCs
-                            where i.Id.Equals(x)
+                var query1 = from i in sc1.Configs
+                            where i.Name.Equals("NumberOfStatusMessages")
                             select i;
-                var status = query.First();
 
-               
+                var config = query1.First();
                 //set the dialogue to the speechOutput. 
+                int range = Convert.ToInt16(config.Value);
 
-                string speechOutput = status.Dialogue.ToString();
-                return BuildSpeechletResponse("Status Update", speechOutput, false);
+
+
+
+                Random rnd = new Random();
+                int x = rnd.Next(1, range);
+
+                //pull the dialogue from the database 
+
+                using (var sc = new StarCitizenDBEntities10())
+                {
+                    var query = from i in sc.StatusSCs
+                                where i.Id.Equals(x)
+                                select i;
+                    var status = query.First();
+
+
+                    //set the dialogue to the speechOutput. 
+
+                    string speechOutput = status.Dialogue.ToString();
+                    return BuildSpeechletResponse("Status Update", speechOutput, false);
+                }
             }
         }
+
 
         private SpeechletResponse ModelInfo(Intent intent, Session session)
         {
