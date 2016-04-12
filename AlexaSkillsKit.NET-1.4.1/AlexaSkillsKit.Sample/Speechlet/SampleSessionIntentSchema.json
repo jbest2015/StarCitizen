@@ -1,17 +1,23 @@
 {
   "intents": [
     {
-      "intent": "MyNameIsIntent",
+      "intent": "statusIntent",
       "slots": [
-        {
-          "name": "Name",
-          "type": "LITERAL"
-        }
+      
       ]
     },
     {
-      "intent": "WhatsMyNameIntent",
-      "slots": []
-    }
+      "intent": "modelIntent",
+      "slots": [
+       {
+          "name": "modelname",
+          "type": "MODEL_TYPE"
+        }
+      			]
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+    },
+    {"intent":"AMAZON.CancelIntent"}
   ]
 }

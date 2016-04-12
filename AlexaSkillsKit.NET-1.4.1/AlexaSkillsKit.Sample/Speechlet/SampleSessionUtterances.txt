@@ -1,7 +1,12 @@
-MyNameIsIntent  my name is {john|Name}
-MyNameIsIntent  my name is {sam brown|Name}
-WhatsMyNameIntent whats my name
-WhatsMyNameIntent what is my name
-WhatsMyNameIntent say my name
-WhatsMyNameIntent tell me my name
-WhatsMyNameIntent tell me what my name is
+MstatusIntent status update
+statusIntent update status
+statusIntent Computer Status Update
+
+modelIntent Tell me about {modelname}
+modelIntent what is the status for {modelname}
+modelIntent {modelname}
+
+AMAZON.CancelIntent cancel
+AMAZON.CancelIntent please stop
+AMAZON.CancelIntent	stop
+

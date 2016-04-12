@@ -47,8 +47,8 @@ namespace Sample.Controllers
 
             // Note: If the session is started with an intent, no welcome message will be rendered;
             // rather, the intent specific response will be returned.
-            if ("MyNameIsIntent".Equals(intentName)) {
-                return SetNameInSessionAndSayHello(intent, session);
+            if ("AMAZON.CancelIntent".Equals(intentName)) {
+                return BuildSpeechletResponse("Cancel", "Canceled", false);
             } 
             else if ("WhatsMyNameIntent".Equals(intentName)) {
                 return GetNameFromSessionAndSayHello(intent, session);
@@ -60,6 +60,10 @@ namespace Sample.Controllers
             else if ("modelIntent".Equals(intentName))
             {
                 return ModelInfo(intent, session);
+            }
+            else if ("AMAZON.HelpIntent".Equals(intentName))
+            {
+                return GetHelpResponse();
             }
             else {
                 throw new SpeechletException("Invalid Intent");
@@ -88,6 +92,24 @@ namespace Sample.Controllers
 
          
            
+        }
+
+        /**
+        * Creates and returns a {@code SpeechletResponse} with a welcome message.
+        * 
+        * @return SpeechletResponse spoken and visual welcome message
+        */
+        private SpeechletResponse GetHelpResponse()
+        {
+            
+
+            string speechOutput = "You can say status udpate or you can ask for information on a ship by saying tell me about a ship name such as rogue";
+
+            return BuildSpeechletResponse("Help", speechOutput, false);
+
+
+
+
         }
 
         /**
@@ -158,11 +180,19 @@ namespace Sample.Controllers
                                 where i.ModelName.Equals(modelname)
                                 select i;
 
-                    var model = query.First();
 
-                    //set the dialogue to the speechOutput. 
-                    speechOutput = model.ModelDialogue.ToString();
-                    return BuildSpeechletResponse("Model Information", speechOutput, false);
+                    if (query.Count() != 0)
+                    {
+                        var model = query.First();
+
+                        //set the dialogue to the speechOutput. 
+                        speechOutput = model.ModelDialogue.ToString();
+                        return BuildSpeechletResponse("Model Information", speechOutput, false);
+                    }
+                    else
+                    {
+                        return BuildSpeechletResponse("Model Information", "I am sorry I couldn't find any information on that model", false);
+                    }
                 }
 
             }
