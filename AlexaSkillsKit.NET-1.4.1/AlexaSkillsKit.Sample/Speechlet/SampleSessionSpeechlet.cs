@@ -48,10 +48,10 @@ namespace Sample.Controllers
             // Note: If the session is started with an intent, no welcome message will be rendered;
             // rather, the intent specific response will be returned.
             if ("AMAZON.CancelIntent".Equals(intentName)) {
-                return BuildSpeechletResponse("Cancel", "Canceled", false);
+                return BuildSpeechletResponse("Cancel", "Canceled","false", false);
             } 
             else if ("WhatsMyNameIntent".Equals(intentName)) {
-                return GetNameFromSessionAndSayHello(intent, session);
+                return StatusUpdate(intent, session);
             }
             else if ("statusIntent".Equals(intentName))
             {
@@ -86,8 +86,9 @@ namespace Sample.Controllers
 
 
             string speechOutput = "Welcome to the Star Citizen Computer helper system. ";
+            string reprompt = "You can say status udpate or you can ask for information on a ship by saying tell me about a ship name such as rogue you can also say exit or cancel";
 
-            return BuildSpeechletResponse("Welcome", speechOutput, false);
+            return BuildSpeechletResponse("Welcome", speechOutput,reprompt, false);
             
 
          
@@ -104,8 +105,9 @@ namespace Sample.Controllers
             
 
             string speechOutput = "You can say status udpate or you can ask for information on a ship by saying tell me about a ship name such as rogue";
+            string reprompt = "Are you still there? if you are done you can say exit";
 
-            return BuildSpeechletResponse("Help", speechOutput, false);
+            return BuildSpeechletResponse("Help", speechOutput, reprompt,false);
 
 
 
@@ -150,7 +152,8 @@ namespace Sample.Controllers
                     //set the dialogue to the speechOutput. 
 
                     string speechOutput = status.Dialogue.ToString();
-                    return BuildSpeechletResponse("Status Update", speechOutput, false);
+                    string reprompt = "Going off line in 8 seconds";
+                    return BuildSpeechletResponse("Status Update", speechOutput, reprompt, false);
                 }
             }
         }
@@ -187,11 +190,12 @@ namespace Sample.Controllers
 
                         //set the dialogue to the speechOutput. 
                         speechOutput = model.ModelDialogue.ToString();
-                        return BuildSpeechletResponse("Model Information", speechOutput, false);
+                        string reprompt = "Would you like to hear about another ship? Say tell me about a mustang beta or any other ship.";
+                        return BuildSpeechletResponse("Model Information", speechOutput,reprompt ,false);
                     }
                     else
                     {
-                        return BuildSpeechletResponse("Model Information", "I am sorry I couldn't find any information on that model", false);
+                        return BuildSpeechletResponse("Model Information", "I am sorry I couldn't find any information on that model","Please try again.", false);
                     }
                 }
 
@@ -199,7 +203,7 @@ namespace Sample.Controllers
             else {
                 // Render an error since we don't know what the model name is.
                 speechOutput = "I'm not sure which model you wanted information for, please try again";
-                return BuildSpeechletResponse("Model Information", speechOutput, false);
+                return BuildSpeechletResponse("Model Information", speechOutput,"please try again", false);
             }
 
         }
@@ -236,7 +240,7 @@ namespace Sample.Controllers
 
             // Here we are setting shouldEndSession to false to not end the session and
             // prompt the user for input
-            return BuildSpeechletResponse(intent.Name, speechOutput, false);
+            return BuildSpeechletResponse(intent.Name, speechOutput,"no response", false);
         }
 
 
@@ -264,7 +268,7 @@ namespace Sample.Controllers
                 speechOutput = "I'm not sure what your name is, you can say, my name is Sam";
             }
 
-            return BuildSpeechletResponse(intent.Name, speechOutput, shouldEndSession);
+            return BuildSpeechletResponse(intent.Name, speechOutput,"no response", shouldEndSession);
         }
 
 
@@ -279,7 +283,7 @@ namespace Sample.Controllers
          *            should the session be closed
          * @return SpeechletResponse spoken and visual response for the given input
          */
-        private SpeechletResponse BuildSpeechletResponse(string title, string output, bool shouldEndSession) {
+        private SpeechletResponse BuildSpeechletResponse(string title, string output, string reprompt_out, bool shouldEndSession) {
             // Create the Simple card content.
             SimpleCard card = new SimpleCard();
             card.Title = String.Format(title);
@@ -289,12 +293,23 @@ namespace Sample.Controllers
             // Create the plain text output.
             PlainTextOutputSpeech speech = new PlainTextOutputSpeech();
             speech.Text = output;
+           
+             PlainTextOutputSpeech reprompt_speech = new PlainTextOutputSpeech();
+             reprompt_speech.Text = reprompt_out;
+ 
+           
 
             // Create the speechlet response.
             SpeechletResponse response = new SpeechletResponse();
             response.ShouldEndSession = shouldEndSession;
             response.OutputSpeech = speech;
             response.Card = card;
+            //if (!shouldEndSession)
+            //{
+                response.Reprompt.OutputSpeech = reprompt_speech;
+            //    return response;
+            //}
+
             return response;
         }
     }
