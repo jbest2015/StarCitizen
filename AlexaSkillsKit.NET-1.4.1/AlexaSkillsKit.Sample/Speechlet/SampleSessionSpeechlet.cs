@@ -48,7 +48,7 @@ namespace Sample.Controllers
             // Note: If the session is started with an intent, no welcome message will be rendered;
             // rather, the intent specific response will be returned.
             if ("AMAZON.CancelIntent".Equals(intentName)) {
-                return BuildSpeechletResponse("Cancel", "Canceled","false", false);
+                return BuildSpeechletResponse("Cancel", "Canceled",GetConfigValues("CancelReprompt"), false);
             } 
             else if ("WhatsMyNameIntent".Equals(intentName)) {
                 return StatusUpdate(intent, session);
@@ -85,10 +85,11 @@ namespace Sample.Controllers
             // Create a random numnber. Right now I am hard coding.. eventually we will pull this from the configuration database. 
 
 
-            string speechOutput = "Welcome to the Star Citizen Computer helper system. ";
-            string reprompt = "You can say status udpate or you can ask for information on a ship by saying tell me about a ship name such as rogue you can also say exit or cancel";
+            string speechOutput = GetConfigValues("WelcomeMessage");
+            string reprompt = GetConfigValues("WelcomeReprompt");
 
-            return BuildSpeechletResponse("Welcome", speechOutput,reprompt, false);
+
+            return BuildSpeechletResponse(GetConfigValues("WelcomeTitle"), speechOutput,reprompt, false);
             
 
          
@@ -102,16 +103,40 @@ namespace Sample.Controllers
         */
         private SpeechletResponse GetHelpResponse()
         {
-            
 
-            string speechOutput = "You can say status udpate or you can ask for information on a ship by saying tell me about a ship name such as rogue";
-            string reprompt = "Are you still there? if you are done you can say exit";
+
+            string speechOutput = GetConfigValues("HelpMessage");
+            string reprompt = GetConfigValues("HelpReprompt");
 
             return BuildSpeechletResponse("Help", speechOutput, reprompt,false);
 
 
 
 
+        }
+
+        /**
+      * Gets config values and strings.
+      * 
+      * @return SpeechletResponse spoken and visual welcome message
+      */
+        private string GetConfigValues(string config_name)
+        {
+
+            using (var sc1 = new StarCitizenDBEntities10())
+            {
+                var query1 = from i in sc1.Configs
+                             where i.Name.Equals(config_name)
+                             select i;
+
+                var config = query1.First();
+                if (config != null)
+                {
+                    return config.Value.ToString();
+                }
+
+                return "I am sorry your config couldn't be found";
+            }
         }
 
         /**
@@ -123,15 +148,8 @@ namespace Sample.Controllers
         {
             // Create a random numnber. Right now I am hard coding.. eventually we will pull this from the configuration database. 
 
-            using (var sc1 = new StarCitizenDBEntities10())
-            {
-                var query1 = from i in sc1.Configs
-                            where i.Name.Equals("NumberOfStatusMessages")
-                            select i;
-
-                var config = query1.First();
-                //set the dialogue to the speechOutput. 
-                int range = Convert.ToInt16(config.Value);
+           
+                int range = Convert.ToInt16(GetConfigValues("NumberOfStatusMessages"));
 
 
 
@@ -152,11 +170,11 @@ namespace Sample.Controllers
                     //set the dialogue to the speechOutput. 
 
                     string speechOutput = status.Dialogue.ToString();
-                    string reprompt = "Going off line in 8 seconds";
-                    return BuildSpeechletResponse("Status Update", speechOutput, reprompt, false);
+                    string reprompt = GetConfigValues("StatusReprompt");
+                return BuildSpeechletResponse(GetConfigValues("StatusTitle"), speechOutput, reprompt, false);
                 }
             }
-        }
+        
 
 
         private SpeechletResponse ModelInfo(Intent intent, Session session)
@@ -190,12 +208,12 @@ namespace Sample.Controllers
 
                         //set the dialogue to the speechOutput. 
                         speechOutput = model.ModelDialogue.ToString();
-                        string reprompt = "Would you like to hear about another ship? Say tell me about a mustang beta or any other ship.";
-                        return BuildSpeechletResponse("Model Information", speechOutput,reprompt ,false);
+                        string reprompt = GetConfigValues("ModelReprompt");
+                        return BuildSpeechletResponse(GetConfigValues("ModelTitle"), speechOutput,reprompt ,false);
                     }
                     else
                     {
-                        return BuildSpeechletResponse("Model Information", "I am sorry I couldn't find any information on that model","Please try again.", false);
+                        return BuildSpeechletResponse(GetConfigValues("ModelTitle"), "I am sorry I couldn't find any information on that model","Please try again.", false);
                     }
                 }
 
@@ -203,7 +221,7 @@ namespace Sample.Controllers
             else {
                 // Render an error since we don't know what the model name is.
                 speechOutput = "I'm not sure which model you wanted information for, please try again";
-                return BuildSpeechletResponse("Model Information", speechOutput,"please try again", false);
+                return BuildSpeechletResponse(GetConfigValues("ModelTitle"), speechOutput,"please try again", false);
             }
 
         }
@@ -217,31 +235,31 @@ namespace Sample.Controllers
          *            intent for the request
          * @return SpeechletResponse spoken and visual response the given intent
          */
-        private SpeechletResponse SetNameInSessionAndSayHello(Intent intent, Session session) {
-            // Get the slots from the intent.
-            Dictionary<string, Slot> slots = intent.Slots;
+        //private SpeechletResponse SetNameInSessionAndSayHello(Intent intent, Session session) {
+        //    // Get the slots from the intent.
+        //    Dictionary<string, Slot> slots = intent.Slots;
 
-            // Get the name slot from the list slots.
-            Slot nameSlot = slots[NAME_SLOT];
-            string speechOutput = "";
+        //    // Get the name slot from the list slots.
+        //    Slot nameSlot = slots[NAME_SLOT];
+        //    string speechOutput = "";
 
-            // Check for name and create output to user.
-            if (nameSlot != null) {
-                // Store the user's name in the Session and create response.
-                string name = nameSlot.Value;
-                session.Attributes[NAME_KEY] = name;
-                speechOutput = String.Format(
-                    "Hello {0}, now I can remember your name, you can ask me your name by saying, whats my name?", name);
-            } 
-            else {
-                // Render an error since we don't know what the users name is.
-                speechOutput = "I'm not sure what your name is, please try again";
-            }
+        //    // Check for name and create output to user.
+        //    if (nameSlot != null) {
+        //        // Store the user's name in the Session and create response.
+        //        string name = nameSlot.Value;
+        //        session.Attributes[NAME_KEY] = name;
+        //        speechOutput = String.Format(
+        //            "Hello {0}, now I can remember your name, you can ask me your name by saying, whats my name?", name);
+        //    } 
+        //    else {
+        //        // Render an error since we don't know what the users name is.
+        //        speechOutput = "I'm not sure what your name is, please try again";
+        //    }
 
-            // Here we are setting shouldEndSession to false to not end the session and
-            // prompt the user for input
-            return BuildSpeechletResponse(intent.Name, speechOutput,"no response", false);
-        }
+        //    // Here we are setting shouldEndSession to false to not end the session and
+        //    // prompt the user for input
+        //    return BuildSpeechletResponse(intent.Name, speechOutput,"no response", false);
+        //}
 
 
         /**
@@ -251,25 +269,25 @@ namespace Sample.Controllers
          *            intent for the request
          * @return SpeechletResponse spoken and visual response for the intent
          */
-        private SpeechletResponse GetNameFromSessionAndSayHello(Intent intent, Session session) {
-            string speechOutput = "";
-            bool shouldEndSession = false;
+        //private SpeechletResponse GetNameFromSessionAndSayHello(Intent intent, Session session) {
+        //    string speechOutput = "";
+        //    bool shouldEndSession = false;
 
-            // Get the user's name from the session.
-            string name = (String)session.Attributes[NAME_KEY];
+        //    // Get the user's name from the session.
+        //    string name = (String)session.Attributes[NAME_KEY];
 
-            // Check to make sure user's name is set in the session.
-            if (!String.IsNullOrEmpty(name)) {
-                speechOutput = String.Format("Your name is {0}, goodbye", name);
-                shouldEndSession = true;
-            } 
-            else {
-                // Since the user's name is not set render an error message.
-                speechOutput = "I'm not sure what your name is, you can say, my name is Sam";
-            }
+        //    // Check to make sure user's name is set in the session.
+        //    if (!String.IsNullOrEmpty(name)) {
+        //        speechOutput = String.Format("Your name is {0}, goodbye", name);
+        //        shouldEndSession = true;
+        //    } 
+        //    else {
+        //        // Since the user's name is not set render an error message.
+        //        speechOutput = "I'm not sure what your name is, you can say, my name is Sam";
+        //    }
 
-            return BuildSpeechletResponse(intent.Name, speechOutput,"no response", shouldEndSession);
-        }
+        //    return BuildSpeechletResponse(intent.Name, speechOutput,"no response", shouldEndSession);
+        //}
 
 
         /**
@@ -287,7 +305,7 @@ namespace Sample.Controllers
             // Create the Simple card content.
             SimpleCard card = new SimpleCard();
             card.Title = String.Format(title);
-            card.Subtitle = String.Format("Star Citizen");
+            card.Subtitle = String.Format(GetConfigValues("CardTitles"));
             card.Content = String.Format(output);
 
             // Create the plain text output.
@@ -296,8 +314,10 @@ namespace Sample.Controllers
            
              PlainTextOutputSpeech reprompt_speech = new PlainTextOutputSpeech();
              reprompt_speech.Text = reprompt_out;
- 
-           
+
+            Reprompt reprompt_obj = new Reprompt();
+            reprompt_obj.OutputSpeech = reprompt_speech;
+
 
             // Create the speechlet response.
             SpeechletResponse response = new SpeechletResponse();
@@ -306,7 +326,9 @@ namespace Sample.Controllers
             response.Card = card;
             //if (!shouldEndSession)
             //{
-                response.Reprompt.OutputSpeech = reprompt_speech;
+
+            response.Reprompt = reprompt_obj;
+
             //    return response;
             //}
 
